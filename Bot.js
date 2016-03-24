@@ -35,9 +35,9 @@ class Bot {
         this.activeUser = from;
         var current = new Date();
         if(to == "pmllbot") var sendTo = from; else var sendTo = to;
-        checkPingedUser(message);
-        checkCommands(sendTo, from, message);
-        checkNonCommands(sendTo, from, message);
+        this.checkPingedUser(message);
+        this.checkCommands(sendTo, from, message);
+        this.checkNonCommands(sendTo, from, message);
     }
     checkCommands(sendTo, from, message) {
         if (contains(['pmllbot','~'], message)) {
