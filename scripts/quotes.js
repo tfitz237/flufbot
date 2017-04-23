@@ -8,7 +8,7 @@ exports.name =
     rtn: function(from, to, message) { return 'blah';}
 }
 */
-
+var fs = require('fs');
 
 exports.quoteRandom = function(bot) {
     return {

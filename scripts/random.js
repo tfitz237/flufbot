@@ -8,3 +8,12 @@ exports.rollDice =  function(bot) {
         private: false
     };
 }
+exports.smoq = function(bot) {
+    return {
+        name: 'smoq call',
+        commands: ['smoq', 'smoak', 'smoake', 'blazeit'],
+        rtn: (from) => 'Yo @here,' + from + ' says blaze it.',
+        isCommand: false,
+        private: false
+    }
+}

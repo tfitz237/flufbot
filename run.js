@@ -1,7 +1,2 @@
-var Bot = require('./Bot');
-module.exports = new Bot(
-    'pmllbot',
-    ['##pmll luelinks','##pmllbot'],
-    '##pmll',
-    'pmllbotrules'
-);
+var DiscordBot = require('./DiscordBot');
+module.exports = new DiscordBot(require('fs').readFileSync('token.txt').toString());
