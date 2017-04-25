@@ -9,7 +9,7 @@ exports.name = function(bot) {
     }
 }
 */
-exports.activeUsers = function(bot) {
+let activeUsers = function(bot) {
     return {
         name: 'activeUsers',
         commands: ["who's here", "who's active", "activeUsers", "active", "whos here", "rolecall", "roll call", "online"],
@@ -18,7 +18,7 @@ exports.activeUsers = function(bot) {
         rtn: () => 'The current active users are: ' + bot.getActiveUsers()
     };
 }
-exports.away = function(bot) {
+let away = function(bot) {
     return {
         name: 'away',
         commands: ["away", "inactive"],

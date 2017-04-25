@@ -31,7 +31,7 @@ exports.quoteAdd = function(bot) {
 exports.quoteShow = function(bot) {
     return {
         name: 'show quote [#]',
-        commands: ['show quote', 'showquote', 'quoteshow', 'quote show'],
+        commands: ['show quote', 'showquote', 'quoteshow', 'quote show', 'quote'],
         isCommand: true,
         private: false,
         rtn: showQuote
@@ -54,19 +54,16 @@ function randQuote() {
 function showQuote(from, message) {
     var quotes = getQuotes();
     var num;
-    try {
-        num = message.split("[")[1];
-        num = parseInt(num.substring(0,num.length - 1));
-    } catch (e) {
-        num = 0;
-    }
+    var match = /[(0-9)+]/.exec(message);
+    num = parseInt(match[1]) || -1;
+
     var quote;
     try {
         var quote = quotes[num];
         return "[" + num + "]-> " + quote.quote;
     }
     catch (e) {
-        return;
+        return "Could not find that quote #";
     }
 }
 

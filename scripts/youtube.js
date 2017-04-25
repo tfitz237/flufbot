@@ -1,6 +1,6 @@
 var request = require('sync-request');
 
-exports.youtubeInfo = function(bot) {
+let youtubeInfo = function(bot) {
     return {
         name: 'youtubeInfo',
         commands: ["regex", "(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.)?youtube\.com\/watch(?:\.php)?\?.*v=)([a-zA-Z0-9\-_]+)"],

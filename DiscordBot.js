@@ -21,8 +21,8 @@ class DiscordBot {
     }
     checkMessage(message) {
         if(message.author.username === "pmll-bot") return;
-        this.checkCommands(message);
-        this.checkNonCommands(message);
+        var found = this.checkCommands(message);
+        if (!found) this.checkNonCommands(message);
     }
     checkCommands(msg) {
         var from = msg.author.username;
@@ -34,13 +34,15 @@ class DiscordBot {
                     found = true;
                     if(this.commands[i].private) {
                         msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
+                        return true;
                     } else {
-                        msg.reply(this.commands[i].rtn(from,message));
+                        msg.channel.sendMessage(this.commands[i].rtn(from,message));
+                        return true;
                     }
                     break;
                 }
             }
-            if(!found && contains(['pmllbot'], message)) msg.reply('Yo, ' + from + ', what\'s up?');
+            return false;
         }
     }
     checkNonCommands(msg) {

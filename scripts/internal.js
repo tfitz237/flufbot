@@ -1,4 +1,4 @@
-exports.logOfUsers = function(bot) {
+let logOfUsers = function(bot) {
     return {
         name: 'logusers',
         commands: ["logusers"],
