@@ -55,8 +55,7 @@ function showQuote(from, message) {
     var quotes = getQuotes();
     var num;
     var match = /[(0-9)+]/.exec(message);
-    num = parseInt(match[1]) || -1;
-
+    num = parseInt(match[0]) || -1;
     var quote;
     try {
         var quote = quotes[num];
