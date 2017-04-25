@@ -3,13 +3,16 @@ let Discord = require('discord.js');
 var moment = require('moment');
 class DiscordBot {
     constructor (token) {
-        this.connect(token);
         console.log('Booting up bot...');
+        this.connect(token);
         this.commands = require('./scripts')(this).commands;
     }
     connect(token) {
         this.client = new Discord.Client({autoReconnect: true});
-        this.client.login(token);
+	console.log('Logging in...');
+        this.client.login(token)
+			.then((msg) => this.addListeners())
+			.catch((msg) => {console.log('error', msg)});
         this.addListeners();
     }
     addListeners() {
