@@ -13,7 +13,6 @@ class DiscordBot {
         this.client.login(token)
 			.then((msg) => this.addListeners())
 			.catch((msg) => {console.log('error', msg)});
-        this.addListeners();
     }
     addListeners() {
         this.client.on('error', message => console.log(message));
