@@ -6,7 +6,7 @@ exports.youtube = function(bot) {
         isCommand: true,
         private: false,
         rtn: (from, message) => {
-            let message = replaceAll(commands.youtube.commands, message);
+            message = replaceAll(commands.youtube.commands, message);
             let res = request('GET', 'https://www.googleapis.com/youtube/v3/search?part=id%2Csnippet&q=' + message + '&type=video&maxResults=2&key=AIzaSyBzYm2pH-GdIPTlf4rjQ8aiE-ZB_EHKMOE');
             try {
                 let data = JSON.parse(res.getBody());
