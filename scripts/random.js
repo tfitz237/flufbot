@@ -7,7 +7,7 @@ exports.smoq = function(bot) {
         isCommand: false,
         private: false
     }
-}
+};
 
 exports.fuckyou = function(bot) {
     return {
@@ -17,4 +17,14 @@ exports.fuckyou = function(bot) {
         isCommand: true,
         private: false
     }
-}
+};
+
+exports.nyan = function(bot) {
+    return {
+        name: 'nyancat',
+        commands: ['nyancat', 'nyan', 'rainbowcat'],
+        rtn: () => 'http://i.imgur.com/TohPiyP.gif',
+        isCommand: true,
+        private: false
+    }
+};
