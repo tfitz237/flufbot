@@ -3,14 +3,14 @@ exports.help =  function(bot) {
         name: 'commands',
         commands: ['help', 'commands'],
         rtn: function() {
-            var cmds = '';
-            var keys = Object.keys(bot.commands);
+            let cmds = '';
+            let keys = Object.keys(bot.commands);
             keys.forEach(function(i) {
                 cmds += "Command: " + bot.commands[i].name + " or [" + bot.commands[i].commands.join(", ") + "]";
                 if (bot.commands[i].isCommand) cmds += "(requires 'pmllbot' or '~')";
                 cmds += "\n";
             });
-            return 'I can currently do these commands:\n' + cmds + '\nThere are other ways to trigger them, but I\'m sure you\'ll figure them out';
+            return 'I can currently do these commands:\n' + cmds;
         },
         isCommand: true,
         private: true

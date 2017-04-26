@@ -8,7 +8,7 @@ exports.name =
     rtn: function(from, to, message) { return 'blah';}
 }
 */
-var fs = require('fs');
+let fs = require('fs');
 
 exports.quoteRandom = function(bot) {
     return {
@@ -39,7 +39,7 @@ exports.quoteShow = function(bot) {
 }
 
 function addQuote(user,quote) {
-    var quotes = getQuotes();
+    let quotes = getQuotes();
     quote = quote.split('"')[1];
     quotes.push({user:user, quote:quote, createdAt: new Date()});
     fs.writeFile('quotes.json', JSON.stringify(quotes));
@@ -47,18 +47,18 @@ function addQuote(user,quote) {
 }
 
 function randQuote() {
-    var quotes = getQuotes();
-    var num =  Math.floor((Math.random() * quotes.length));
+    let quotes = getQuotes();
+    let num =  Math.floor((Math.random() * quotes.length));
     return "[" + num + "]-> " + quotes[num].quote;
 }
 function showQuote(from, message) {
-    var quotes = getQuotes();
-    var num;
-    var match = /[(0-9)+]/.exec(message);
+    let quotes = getQuotes();
+    let num;
+    let match = /[(0-9)+]/.exec(message);
     num = parseInt(match[0]) || -1;
-    var quote;
+    let quote;
     try {
-        var quote = quotes[num];
+        let quote = quotes[num];
         return "[" + num + "]-> " + quote.quote;
     }
     catch (e) {
@@ -67,6 +67,6 @@ function showQuote(from, message) {
 }
 
 function getQuotes() {
-    var quotes = JSON.parse(fs.readFileSync('quotes.json'));
+    let quotes = JSON.parse(fs.readFileSync('quotes.json'));
     return quotes;
 }
