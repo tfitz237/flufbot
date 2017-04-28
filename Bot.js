@@ -1,193 +1,119 @@
-"use strict"
-let irc = require('irc');
-var moment = require('moment');
+let Discord = require('discord.js');
 class Bot {
-    constructor (nick, channels, mainChannel, pass) {
-        this.nick = nick;
-        this.channels = channels;
-        this.mainChannel = mainChannel;
-        this.pass = pass;
-        this.activeUsers = [];
-        this.connect();
+    constructor (token) {
         console.log('Booting up bot...');
+        this.connect(token);
         this.commands = require('./scripts')(this).commands;
     }
-    connect() {
-        this.client = new irc.Client('chat.freenode.net', this.nick, { autoRejoin: true, channels: this.channels, floodProtection:true});
-        this.addListeners();
-        setInterval(() => this.updateActiveUsers(), 60000);
+    connect(token) {
+        this.client = new Discord.Client({autoReconnect: true});
+        this.client.login(token)
+			.then((msg) => console.log('Logged in.'))
+			.catch((msg) => console.log('error', msg));
+	    this.addListeners();
     }
     addListeners() {
-        this.client.addListener('error', message => console.log(message));
-        this.client.addListener('registered',(message)  => {
-            this.client.say('nickserv', 'identify '+this.nick+' '+this.pass);
-            this.client.send('nick', this.nick);
+        this.client.on('error', message => console.log(message));
+        this.client.on('ready',()  => {
             console.log('Bot connected');
         });
-        this.client.addListener('message', (from, to, message) => this.checkMessage(from, to, message));
-        this.client.addListener('join'+this.mainChannel, (from) => this.eventJoin(from));
-        this.client.addListener('part'+this.mainChannel, (from) => this.eventPart(from));
-        this.client.addListener('nick', (oldnick, newnick, channels) => this.eventNick(oldnick, newnick, channels));
-
+        this.client.on('message', message => this.checkMessage(message));
     }
-    checkMessage(from, to, message) {
-        if(from == "pmllbot") return;
-        this.activeUser = from;
-        var current = new Date();
-        if(to == "pmllbot") var sendTo = from; else var sendTo = to;
-        this.checkPingedUser(message);
-        this.checkCommands(sendTo, from, message);
-        this.checkNonCommands(sendTo, from, message);
+    checkMessage(message) {
+        if(message.author.username === "pmll-bot") return;
+        let found = this.checkCommands(message);
+        if (!found) this.checkNonCommands(message);
     }
-    checkCommands(sendTo, from, message) {
-        if (contains(['pmllbot','~'], message)) {
-            var found = false;
-            for(var i in this.commands) {
-                if(contains(this.commands[i].commands, message) && this.commands[i].isCommand) {
+    checkCommands(msg) {
+        let from = msg.author.username;
+        let message = msg.content;
+        let prefix = false;
+        if(message.substring(0,1) === "!") {
+            prefix = "!";
+        }
+        if (msg.mentions.users.exists('username', 'pmll-bot')) {
+            prefix = this.id + ' ';
+        }
+        if (prefix) {
+            let found = false;
+            for(let i in this.commands) {
+                if(this.commands[i].isCommand && this.containsCommand(this.commands[i].commands, message, prefix)) {
                     found = true;
+                    message = this.removeCommands(this.commands[i].commands, message, prefix);
                     if(this.commands[i].private) {
-                        this.client.say(from, this.commands[i].rtn(from,message));
+                        msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
+                        return true;
                     } else {
-                        this.client.say(sendTo, this.commands[i].rtn(from,message));
+                        msg.channel.sendMessage(this.commands[i].rtn(from,message));
+                        return true;
                     }
-                    break;
                 }
             }
-            if(!found && contains(['pmllbot'], message)) this.client.say(sendTo, 'Yo, ' + from + ', what\'s up?');
+            return false;
         }
     }
-    checkNonCommands(sendTo, from, message) {
-        for (var i in this.commands) {
+    checkNonCommands(msg) {
+        let from = msg.author.username;
+        let message = msg.content;
+        for (let i in this.commands) {
             if(!this.commands[i].isCommand) {
                 if(contains(this.commands[i].commands, message)) {
+                    message = this.removeCommands(this.commands[i], message);
                     if(this.commands[i].private) {
-                        this.client.say(from, this.commands[i].rtn(from,message));
+                        msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
                     } else {
-                        this.client.say(sendTo, this.commands[i].rtn(from,message));
+                        msg.channel.sendMessage(this.commands[i].rtn(from,message));
                     }
                     break;
                 }
             }
         }
     }
-    checkPingedUser(message) {
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(contains(this.activeUsers[i].name,message)) {
-                if(!this.activeUsers[i].active && typeof this.activeUsers[i].pinged != "undefined") {
-                    if(this.activeUsers[i].pinged.getTime() + 100000 <= current.getTime()) {
-                        if(this.activeUsers[i].away != false) {
-                            this.client.say(sendTo, "away msg: " + this.activeUsers[i].away);
-                        }
-                        if (this.activeUsers[i].lastActive.getTime() + 600000 <= current.getTime()) {
-                            this.client.say(sendTo, this.activeUsers[i].name + ' was last active ' + moment.duration(this.activeUsers[i].lastActive.getTime() - new Date().getTime()).humanize(true));
-                            this.activeUsers[i].pinged = current;
-                        }
-                    }
-                    break;
-                }
+    containsCommand(commands, message, prefix) {
+        message = message.toLowerCase();
+        for(let i = 0; i < commands.length; i++) {
+            let command = commands[i].toLowerCase();
+            let test = message.substring(prefix.length, prefix.length  + commands[i].length);
+            if (command === test) {
+                return true;
             }
+        }
+    }
 
-        }
-    }
-    updateActiveUsers() {
-        var current = new Date();
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(this.activeUsers[i].lastActive.getTime() + 900000 <= current.getTime()) {
-                this.activeUsers[i].active = false;
-                this.activeUsers[i].away = false;
-            }
-        }
-        console.log('active: '+this.getActiveUsers());
-    }
-    set activeUser(user) {
-        var current = new Date();
-        if(user == "pmllbot") {
-            console.log('Bot joined channel');
-            return;
-        }
-        if(this.activeUsers.length == 0) {
-            this.activeUsers.push({name: user, lastActive: current, active: true, away: false});
-        } else {
-            for (var i = 0; i < this.activeUsers.length; i++) {
-                if(this.activeUsers[i].name == user) {
-                    this.activeUsers[i].lastActive = current;
-                    this.activeUsers[i].active = true;
-                    this.activeUsers[i].away = false;
-                    return;
-                }
-            }
-            this.activeUsers.push({name: user, lastActive: current, active:true, away: false});
-        }
-    }
-    setInactiveUser(nick) {
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(this.activeUsers[i].name == nick) {
-                this.activeUsers[i].active = false;
-                this.activeUsers[i].pinged = new Date();
-            }
-        }
-    }
-    setAway(nick, msg) {
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(this.activeUsers[i].name == nick) {
-                this.activeUsers[i].away = msg;
-                this.activeUsers[i].active = false;
-                this.activeUsers[i].pinged = new Date();
-            }
-        }
-    }
-    getActiveUsers(nick) {
-        var rtn = '';
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(this.activeUsers[i].active == true && this.activeUsers[i].name != nick) {
-                rtn += this.activeUsers[i].name;
-                if(this.activeUsers.length - 1  != i) {
-                    rtn += ", ";
-                }
-            }
-        }
-        return rtn;
-    }
-    updateNick(oldNick,newNick) {
-        for (var i = 0; i < this.activeUsers.length; i++) {
-            if(this.activeUsers[i].name == oldNick) {
-                this.activeUsers[i].name = newNick;
+    removeCommands(commands, message, prefix) {
+        prefix = prefix || '';
+        message = message.toLowerCase();
+        for (let i = 0; i < commands.length; i++) {
+            let command = commands[i].toLowerCase();
+            let test = message.substring(prefix.length, prefix.length  + commands[i].length);
+            if (command === test) {
+                message = message.replace(prefix + command, '');
                 break;
             }
+
         }
+        message = message.trim();
+        return message;
     }
 
-    eventNick(oldNick, newNick, channels) {
-        if(channels.indexOf(this.mainChannel) !== -1) this.updateNick(oldNick, newNick);
+    get id() {
+        return '<@' + this.client.user.id + '>';
     }
-    eventPart(user) {
-        console.log(user + " left");
-        this.setInactiveUser(user);
-    }
-    eventJoin(user) {
-        var active = this.getActiveUsers(user);
-        this.activeUser = user;
-        if(user != "pmllbot") {
-            this.client.say(this.mainChannel, "Hey, " + user + "! Currently the active users are: " + active);
-        }
-    }
-    eventMessage(from, to, message) {
-        this.activeUser = from;
-        this.checkMessage(from, to, message);
-    }
-
 
 }
 
 function contains(cont, stri) {
         stri = stri.toLowerCase();
-        if(typeof cont == "string") {
+        if (!cont) {
+            return false;
+        }
+        if(typeof cont === "string") {
             return stri.indexOf(cont.toLowerCase()) !== -1;
         }
-        if(cont[0] == "regex") {
+        if(cont[0] === "regex") {
             return stri.search(cont[1]) !== -1;
         }
-        for(var i = 0; i < cont.length; i++) {
+        for(let i = 0; i < cont.length; i++) {
             if (stri.indexOf(cont[i].toLowerCase()) !== -1) {
                 return true;
             }
