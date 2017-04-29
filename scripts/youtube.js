@@ -57,16 +57,16 @@ exports.playYoutube = function(bot) {
         private: false,
         rtn: (frm, message) => {
             let match = message.match(yt_regex);
-            if (match[1]){
+            if (match && match[1]){
                 let link = "https://www.youtube.com/watch?v=" + match[1];
                 let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
                 ytdl.getInfo(link, (error, info) => {
                     if(error) {
-                        channel.sendMessage("The requested video (" + video_id + ") does not exist or cannot be played.");
-                        console.log("Error (" + video_id + "): " + error);
+                        channel.sendMessage("The requested video (" + match[1] + ") does not exist or cannot be played.");
+                        console.log("Error (" + match[1] + "): " + error);
                     } else {
 
-                        playMusic(match[1], channel);
+                        playMusic(match[1], channel, info);
                     }
                 });
 
@@ -82,12 +82,12 @@ exports.playYoutube = function(bot) {
 
 
 
-    function playMusic(ytLink, channel) {
+    function playMusic(link, channel, info) {
         let audioStream = ytdl(link, {filter: 'audioonly'});
         this.voiceHandler = bot.audio.playStream(audioStream, {volume: 1});
         this.voiceHandler.on("debug", msg => {console.log(msg)});
         this.voiceHandler.on("error", v=> console.log(v));
-        this.voiceHandler.on("start", v => channel.sendMessage("Playing " + info.title + "in the Music channel"));
+        this.voiceHandler.on("start", v => channel.sendMessage("Now Playing: " + info.title));
         this.voiceHandler.once("end", rtn => {
             channel.sendMessage("Song stopped.");
             this.voiceHandler = null;
