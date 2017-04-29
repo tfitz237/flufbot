@@ -1,9 +1,11 @@
 let Discord = require('discord.js');
+let ytdl =  require('ytdl-core');
+
 class Bot {
     constructor (token) {
         console.log('Booting up bot...');
-        this.connect(token);
         this.commands = require('./scripts')(this).commands;
+        this.connect(token);
     }
     connect(token) {
         this.client = new Discord.Client({autoReconnect: true});
@@ -12,10 +14,13 @@ class Bot {
 			.catch((msg) => console.log('error', msg));
 	    this.addListeners();
 	    this.users = {};
+	    console.log(this.client);
+
     }
     addListeners() {
         this.client.on('error', message => console.log(message));
         this.client.on('ready',()  => {
+            //this.commands.playYoutube.connectAudio(this);
             console.log('Bot connected');
         });
         this.client.on('message', message => this.checkMessage(message));
@@ -81,7 +86,6 @@ class Bot {
             }
         }
     }
-
     removeCommands(commands, message, prefix) {
         prefix = prefix || '';
         message = message.toLowerCase();
@@ -97,12 +101,10 @@ class Bot {
         message = message.trim();
         return message;
     }
-
     updateUser(user, message) {
         user.lastMessage = message;
         this.users[user.id] = user;
     }
-
     get id() {
         return '<@' + this.client.user.id + '>';
     }
