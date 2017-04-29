@@ -1,3 +1,4 @@
+let ytdl = require('ytdl-core');
 let request = require('sync-request');
 let yt_regex = "(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.)?youtube\.com\/watch(?:\.php)?\?.*v=)([a-zA-Z0-9\-_]+)";
 exports.youtube = function(bot) {
@@ -57,18 +58,20 @@ exports.playYoutube = function(bot) {
         rtn: (frm, message) => {
             let match = message.match(yt_regex);
             if (match[1]){
-                let audioStream = ytdl("https://www.youtube.com/watch?v=" + match[1]);
-                this.voiceHandler = voiceConnection.playStream(audioStream);
-
+                let audioStream = ytdl("https://www.youtube.com/watch?v=" + match[1], {filter: 'audioonly'});
+		this.voiceHandler = bot.audio.playStream(audioStream, {volume: 1});
+		this.voiceHandler.on("debug", msg => {console.log(msg)});
+		this.voiceHandler.on("error", v=> console.log(v));
+		this.voiceHandler.on("start", v => 'Stream started');
                 this.voiceHandler.once("end", rtn => {
                     this.voiceHandler = null;
                 })
             }
+		return 'Playing audio...';
         },
         connectAudio: (bot) => {
-            console.log(bot);
             let voice_channel = bot.client.channels.find(chn => chn.name === "Music" && chn.type === "voice");
-            voice_channel.join().then(connection => {this.audio = connection;}).catch(console.error);
+            voice_channel.join().then(connection => {bot.audio = connection;}).catch(console.error);
         }
 
     };

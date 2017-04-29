@@ -20,7 +20,7 @@ class Bot {
     addListeners() {
         this.client.on('error', message => console.log(message));
         this.client.on('ready',()  => {
-            //this.commands.playYoutube.connectAudio(this);
+            this.commands.playYoutube.connectAudio(this);
             console.log('Bot connected');
         });
         this.client.on('message', message => this.checkMessage(message));
@@ -88,10 +88,10 @@ class Bot {
     }
     removeCommands(commands, message, prefix) {
         prefix = prefix || '';
-        message = message.toLowerCase();
+	let message2 = message.toLowerCase();
         for (let i = 0; i < commands.length; i++) {
             let command = commands[i].toLowerCase();
-            let test = message.substring(prefix.length, prefix.length  + commands[i].length);
+            let test = message2.substring(prefix.length, prefix.length  + commands[i].length);
             if (command === test) {
                 message = message.replace(prefix + command, '');
                 break;
