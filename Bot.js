@@ -1,5 +1,4 @@
 let Discord = require('discord.js');
-let ytdl =  require('ytdl-core');
 
 class Bot {
     constructor (token) {

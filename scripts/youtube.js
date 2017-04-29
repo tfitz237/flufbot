@@ -58,14 +58,18 @@ exports.playYoutube = function(bot) {
         rtn: (frm, message) => {
             let match = message.match(yt_regex);
             if (match[1]){
-                let audioStream = ytdl("https://www.youtube.com/watch?v=" + match[1], {filter: 'audioonly'});
-		this.voiceHandler = bot.audio.playStream(audioStream, {volume: 1});
-		this.voiceHandler.on("debug", msg => {console.log(msg)});
-		this.voiceHandler.on("error", v=> console.log(v));
-		this.voiceHandler.on("start", v => 'Stream started');
-                this.voiceHandler.once("end", rtn => {
-                    this.voiceHandler = null;
-                })
+                let link = "https://www.youtube.com/watch?v=" + match[1];
+                let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
+                ytdl.getInfo(link, (error, info) => {
+                    if(error) {
+                        channel.sendMessage("The requested video (" + video_id + ") does not exist or cannot be played.");
+                        console.log("Error (" + video_id + "): " + error);
+                    } else {
+
+                        playMusic(match[1], channel);
+                    }
+                });
+
             }
 		return 'Playing audio...';
         },
@@ -78,7 +82,15 @@ exports.playYoutube = function(bot) {
 
 
 
-    function playMusic(ytLink) {
-        audio.playStream(ytdl("https://youtube.com/watch?v="+ytLink))
+    function playMusic(ytLink, channel) {
+        let audioStream = ytdl(link, {filter: 'audioonly'});
+        this.voiceHandler = bot.audio.playStream(audioStream, {volume: 1});
+        this.voiceHandler.on("debug", msg => {console.log(msg)});
+        this.voiceHandler.on("error", v=> console.log(v));
+        this.voiceHandler.on("start", v => channel.sendMessage("Playing " + info.title + "in the Music channel"));
+        this.voiceHandler.once("end", rtn => {
+            channel.sendMessage("Song stopped.");
+            this.voiceHandler = null;
+        });
     }
 }
