@@ -1,6 +1,7 @@
 let ytdl = require('ytdl-core');
 let request = require('sync-request');
 let yt_regex = "(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.)?youtube\.com\/watch(?:\.php)?\?.*v=)([a-zA-Z0-9\-_]+)";
+
 exports.youtube = function(bot) {
     return {
         name: 'youtube search',
@@ -25,16 +26,114 @@ exports.youtube = function(bot) {
     };
 };
 
-
-let youtubeInfo = function(bot) {
+exports.playYoutube = function(bot) {
     return {
-        name: 'youtubeInfo',
-        commands: ["regex", yt_regex],
-        isCommand: false,
+        name: 'playYoutube',
+        commands: ['playYoutube', 'playYT', 'playAudio', 'play audio' ,'play'],
+        isCommand: true,
         private: false,
-        rtn: (from, message) => getInfo(message)
+        rtn: (frm, message) => {
+            let match = message.match(yt_regex);
+            let id;
+            if (match && match[1]) {
+                id = match[1];
+            } else {
+                id = searchYoutube(message);
+            }
+            let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
+            ytdl.getInfo(getYoutubeLink(id), (error, info) => {
+                if(error) {
+                    channel.sendMessage("The requested video (" + match[1] + ") does not exist or cannot be played.");
+                    console.log("Error (" + match[1] + "): " + error);
+                } else {
+                    addToQueue(id, info, channel);
+                }
+            });
+        },
+        connectAudio: (bot) => {
+            let voice_channel = bot.client.channels.find(chn => chn.name === "Music" && chn.type === "voice");
+            voice_channel.join().then(connection => {
+                bot.audio = bot.audio || {};
+                bot.audio.connection = connection;
+            }).catch(console.error);
+        },
+        playNext: playNext
+
     };
+
+    function playMusic(channel, video) {
+        let audioStream = ytdl(getYoutubeLink(video.link), {filter: 'audioonly'});
+        let voiceHandler = bot.audio.connection.playStream(audioStream, {volume: 0.8});
+        voiceHandler.on("debug", msg => {console.log(msg)});
+        voiceHandler.on("error", v=> console.log(v));
+        voiceHandler.on("start", v => {
+            bot.audio.playing = true;
+            channel.sendMessage("Now Playing: " + getYoutubeLink(video.link) + "\n");
+        });
+        voiceHandler.once("end", rtn => {
+            channel.sendMessage("Song stopped.");
+            bot.audio.playing = playNext(channel);
+            voiceHandler = null;
+        });
+    }
+
+    function addToQueue(id, info, channel) {
+        bot.audio.tracks = bot.audio.tracks || [];
+        bot.audio.tracks.push({
+            link: id,
+            info: info
+        });
+        if(!bot.audio.playing) {
+            playNext(channel);
+        } else {
+            channel.sendMessage("Added to queue: " + info.title);
+        }
+    }
+
+    function playNext(channel) {
+        if(bot.audio.current === null || typeof bot.audio.current === "undefined") {
+            bot.audio.current = -1;
+        }
+
+        if(bot.audio.tracks[bot.audio.current +1]) {
+            bot.audio.current = bot.audio.current + 1;
+            playMusic(channel, bot.audio.tracks[bot.audio.current]);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 };
+
+exports.playNext = (bot) => {
+    return {
+        name: 'play next song in queue',
+        commands: ['playnext', 'next'],
+        isCommand: true,
+        private: false,
+        rtn: (frm, message) => {
+            let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
+            bot.commands.playYoutube.playNext(channel);
+        }
+    }
+};
+
+
+
+function searchYoutube(query) {
+    let res = request('GET', 'https://www.googleapis.com/youtube/v3/search?part=id%2Csnippet&q=' + query + '&type=video&maxResults=2&key=AIzaSyBzYm2pH-GdIPTlf4rjQ8aiE-ZB_EHKMOE');
+    try {
+        let data = JSON.parse(res.getBody());
+        if (data.items.length > 0) {
+            return data.items[0].id.videoId;
+        }
+        return false;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
 
 
 function getInfo(message) {
@@ -46,51 +145,6 @@ function getInfo(message) {
         console.log(e);
     }
 }
-
-
-
-exports.playYoutube = function(bot) {
-    return {
-        name: 'playYoutube',
-        commands: ['playYoutube', 'playYT', 'playAudio', 'play audio'],
-        isCommand: true,
-        private: false,
-        rtn: (frm, message) => {
-            let match = message.match(yt_regex);
-            if (match && match[1]){
-                let link = "https://www.youtube.com/watch?v=" + match[1];
-                let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
-                ytdl.getInfo(link, (error, info) => {
-                    if(error) {
-                        channel.sendMessage("The requested video (" + match[1] + ") does not exist or cannot be played.");
-                        console.log("Error (" + match[1] + "): " + error);
-                    } else {
-
-                        playMusic(match[1], channel, info);
-                    }
-                });
-
-            }
-		return 'Playing audio...';
-        },
-        connectAudio: (bot) => {
-            let voice_channel = bot.client.channels.find(chn => chn.name === "Music" && chn.type === "voice");
-            voice_channel.join().then(connection => {bot.audio = connection;}).catch(console.error);
-        }
-
-    };
-
-
-
-    function playMusic(link, channel, info) {
-        let audioStream = ytdl(link, {filter: 'audioonly'});
-        this.voiceHandler = bot.audio.playStream(audioStream, {volume: 1});
-        this.voiceHandler.on("debug", msg => {console.log(msg)});
-        this.voiceHandler.on("error", v=> console.log(v));
-        this.voiceHandler.on("start", v => channel.sendMessage("Now Playing: " + info.title));
-        this.voiceHandler.once("end", rtn => {
-            channel.sendMessage("Song stopped.");
-            this.voiceHandler = null;
-        });
-    }
+function getYoutubeLink(id) {
+    return "https://www.youtube.com/watch?v=" + id;
 }

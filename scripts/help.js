@@ -6,11 +6,11 @@ exports.help =  function(bot) {
             let cmds = '';
             let keys = Object.keys(bot.commands);
             keys.forEach(function(i) {
-                cmds += "Command: " + bot.commands[i].name + " or [" + bot.commands[i].commands.join(", ") + "]";
-                if (bot.commands[i].isCommand) cmds += "(requires 'pmllbot' or '~')";
+                cmds += "* __" + bot.commands[i].name + "__ --> `" + bot.commands[i].commands.map(cmd => '!' + cmd).join(", ") +'`';
+                if (bot.commands[i].isCommand) cmds += " (requires @mention or '!')";
                 cmds += "\n";
             });
-            return 'I can currently do these commands:\n' + cmds;
+            return '__Current Commands:__\n ' + cmds;
         },
         isCommand: true,
         private: true

@@ -13,8 +13,6 @@ class Bot {
 			.catch((msg) => console.log('error', msg));
 	    this.addListeners();
 	    this.users = {};
-	    console.log(this.client);
-
     }
     addListeners() {
         this.client.on('error', message => console.log(message));
@@ -47,7 +45,11 @@ class Bot {
                     found = true;
                     message = this.removeCommands(this.commands[i].commands, message, prefix);
                     if(this.commands[i].private) {
-                        msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
+                        let channel = msg.author.dmChannel;
+                        if (channel)
+                            msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
+                        else
+                            msg.channel.sendMessage('Sorry, I had trouble DMing you...');
                         return true;
                     } else {
                         msg.channel.sendMessage(this.commands[i].rtn(from,message));
@@ -111,22 +113,22 @@ class Bot {
 }
 
 function contains(cont, stri) {
-        stri = stri.toLowerCase();
-        if (!cont) {
-            return false;
-        }
-        if(typeof cont === "string") {
-            return stri.indexOf(cont.toLowerCase()) !== -1;
-        }
-        if(cont[0] === "regex") {
-            return stri.search(cont[1]) !== -1;
-        }
-        for(let i = 0; i < cont.length; i++) {
-            if (stri.indexOf(cont[i].toLowerCase()) !== -1) {
-                return true;
-            }
-        }
+    stri = stri.toLowerCase();
+    if (!cont) {
         return false;
     }
+    if(typeof cont === "string") {
+        return stri.indexOf(cont.toLowerCase()) !== -1;
+    }
+    if(cont[0] === "regex") {
+        return stri.search(cont[1]) !== -1;
+    }
+    for(let i = 0; i < cont.length; i++) {
+        if (stri.indexOf(cont[i].toLowerCase()) !== -1) {
+            return true;
+        }
+    }
+    return false;
+}
 
 module.exports = Bot;
