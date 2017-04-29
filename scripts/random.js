@@ -2,8 +2,8 @@
 exports.smoq = function(bot) {
     return {
         name: 'smoq call',
-        commands: ['smoq', 'smoak', 'smoake', 'blazeit'],
-        rtn: (from) => 'Yo @here,' + from + ' says blaze it.',
+        commands: ['smoq', 'smoak', 'smoake', 'blazeit', 'smock', 'ne14atoke', 'ne14atoq', 'ne14atok'],
+        rtn: (from) => from + ' says blaze it. SMOKE UP ' + bot.commands["activeUsers"].get(bot, true),
         isCommand: false,
         private: false
     }

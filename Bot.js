@@ -11,6 +11,7 @@ class Bot {
 			.then((msg) => console.log('Logged in.'))
 			.catch((msg) => console.log('error', msg));
 	    this.addListeners();
+	    this.users = {};
     }
     addListeners() {
         this.client.on('error', message => console.log(message));
@@ -21,6 +22,7 @@ class Bot {
     }
     checkMessage(message) {
         if(message.author.username === "pmll-bot") return;
+        this.updateUser(message.author, message);
         let found = this.checkCommands(message);
         if (!found) this.checkNonCommands(message);
     }
@@ -94,6 +96,11 @@ class Bot {
         }
         message = message.trim();
         return message;
+    }
+
+    updateUser(user, message) {
+        user.lastMessage = message;
+        this.users[user.id] = user;
     }
 
     get id() {
