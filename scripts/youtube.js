@@ -94,7 +94,7 @@ exports.playYoutube = function(bot) {
         if(bot.audio.current === null || typeof bot.audio.current === "undefined") {
             bot.audio.current = -1;
         }
-
+        if(bot.audio.tracks[bot.audio.current]) bot.audio.tracks[bot.audio.current].played = true;
         if(bot.audio.tracks[bot.audio.current +1]) {
             bot.audio.current = bot.audio.current + 1;
             playMusic(channel, bot.audio.tracks[bot.audio.current]);
@@ -119,7 +119,34 @@ exports.playNext = (bot) => {
     }
 };
 
+exports.queue = (bot) => {
+  return {
+      name: 'display queue',
+      commands: ['queue', 'whatsnext', 'showqueue', 'what\'s next', 'whatsplaying', 'what\'s playing'],
+      isCommand: true,
+      private: false,
+      rtn: () => {
+          let channel = bot.client.channels.find(chn => chn.name === "bot_music" && chn.type === "text");
+          let channel2 = bot.client.channels.find(chn => chn.name === "bot_queue" && chn.type === "text");
+          let queue = displayQueue(bot);
+          channel.sendMessage(queue);
+          channel2.sendMessage(queue);
+      }
+  }
 
+  function displayQueue(bot) {
+      let queue = bot.audio.tracks.filter(track => !track.played);
+      queue = queue.map(track => {
+          let rtn = '*';
+          if (track.link === bot.audio.tracks[bot.audio.current].link) {
+              rtn += 'Now Playing: ';
+          }
+          rtn += track.info.title;
+          return rtn;
+      }).join('\n');
+      return 'Current Queue: \n'+queue;
+  }
+};
 
 function searchYoutube(query) {
     let res = request('GET', 'https://www.googleapis.com/youtube/v3/search?part=id%2Csnippet&q=' + query + '&type=video&maxResults=2&key=AIzaSyBzYm2pH-GdIPTlf4rjQ8aiE-ZB_EHKMOE');
@@ -135,6 +162,9 @@ function searchYoutube(query) {
     }
 }
 
+function getYoutubeLink(id) {
+    return "https://www.youtube.com/watch?v=" + id;
+}
 
 function getInfo(message) {
     let res = request('GET','https://www.youtube.com/oembed?url='+message+'&format=json');
@@ -144,7 +174,4 @@ function getInfo(message) {
     } catch (e) {
         console.log(e);
     }
-}
-function getYoutubeLink(id) {
-    return "https://www.youtube.com/watch?v=" + id;
 }
