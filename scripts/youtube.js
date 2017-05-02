@@ -135,6 +135,7 @@ exports.queue = (bot) => {
   }
 
   function displayQueue(bot) {
+      if(!bot.audio.tracks) return 'There are no songs in the queue';
       let queue = bot.audio.tracks.filter(track => !track.played);
       queue = queue.map(track => {
           let rtn = '*';

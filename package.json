@@ -4,13 +4,14 @@
   "description": "A bot for pmll",
   "main": "run.js",
   "scripts": {
-    "start": "node run.js"
+    "start": "nodemon run.js -V"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "latest",
     "moment": "^2.12.0",
+    "nodemon": "^1.11.0",
     "opusscript": "0.0.3",
     "request": "^2.69.0",
     "sync-request": "^3.0.0",
