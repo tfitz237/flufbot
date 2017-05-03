@@ -8,7 +8,7 @@ exports.giphy = function(bot) {
         private: false,
         rtn: (from, message) => {
 
-            let res = request('GET','http://api.giphy.com/v1/gifs/translate?q='+encodeURIComponent(message)+'&api_key=dc6zaTOxFJmzC');
+            let res = request('GET','http://api.giphy.com/v1/gifs/translate?q='+encodeURIComponent(message.replace(' ', '+'))+'&api_key=dc6zaTOxFJmzC');
             try {
                 let data = JSON.parse(res.getBody());
                 if(data.data)
