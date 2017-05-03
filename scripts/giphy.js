@@ -12,7 +12,7 @@ exports.giphy = function(bot) {
             try {
                 let data = JSON.parse(res.getBody());
                 if(data.data)
-                    return data.data[0].url;
+                    return data.data.url;
                 return 'No media found.';
             } catch (e) {
                 console.log(e);
