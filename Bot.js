@@ -1,9 +1,9 @@
-let Discord = require('discord.js');
-
+import Discord from 'discord.js';
+import scripts from './scripts';
 class Bot {
     constructor (token) {
         console.log('Booting up bot...');
-        this.commands = require('./scripts')(this).commands;
+        this.commands = scripts(this);
         this.connect(token);
     }
     connect(token) {
@@ -17,13 +17,13 @@ class Bot {
     addListeners() {
         this.client.on('error', message => console.log(message));
         this.client.on('ready',()  => {
-            this.commands.playYoutube.connectAudio(this);
+            //this.commands.playYoutube.connectAudio(this);
             console.log('Bot connected');
         });
         this.client.on('message', message => this.checkMessage(message));
     }
     checkMessage(message) {
-        if(message.author.username === "pmll-bot") return;
+        if(message.author.username === "flufbot") return;
         this.updateUser(message.author, message);
         let found = this.checkCommands(message);
         if (!found) this.checkNonCommands(message);
@@ -35,7 +35,7 @@ class Bot {
         if(message.substring(0,1) === "!") {
             prefix = "!";
         }
-        if (msg.mentions.users.exists('username', 'pmll-bot')) {
+        if (msg.mentions.users.exists('username', 'flufbot')) {
             prefix = this.id + ' ';
         }
         if (prefix) {
@@ -46,13 +46,26 @@ class Bot {
                     message = this.removeCommands(this.commands[i].commands, message, prefix);
                     if(this.commands[i].private) {
                         let channel = msg.author.dmChannel;
-                        if (channel)
-                            msg.author.dmChannel.sendMessage(this.commands[i].rtn(from,message));
-                        else
+                        if (channel) {
+                            if (this.commands[i].async) {
+                                this.commands[i].rtn(from, message).then(function(val) {
+                                    msg.author.dmChannel.sendMessage(val);
+                                })
+                            } else {
+                                msg.author.dmChannel.sendMessage(this.commands[i].rtn(from, message));
+                            }
+                        } else {
                             msg.channel.sendMessage('Sorry, I had trouble DMing you...');
+                        }
                         return true;
                     } else {
-                        msg.channel.sendMessage(this.commands[i].rtn(from,message));
+                        if (this.commands[i].async) {
+                            this.commands[i].rtn(from, message).then(function(val) {
+                                msg.channel.sendMessage(val);
+                            })
+                        } else {
+                            msg.channel.sendMessage(this.commands[i].rtn(from, message));
+                        }
                         return true;
                     }
                 }
@@ -131,4 +144,4 @@ function contains(cont, stri) {
     return false;
 }
 
-module.exports = Bot;
+export default Bot;

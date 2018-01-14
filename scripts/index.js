@@ -1,14 +1,13 @@
-module.exports = function(bot) {
-    let self = this;
-    self.commands = {};
+export default function(bot) {
+    const commands = {};
     require('fs').readdirSync(__dirname + '/').forEach(function(file) {
       if (file.match(/\.js$/) !== null && file !== 'index.js') {
         let name = file.replace('.js', '');
         let tmp = require('./'+file);
         for (let prop in tmp) {
-            self.commands[prop] = tmp[prop](bot);
+            commands[prop] = tmp[prop](bot);
         }
       }
     });
-    return self;
+    return commands;
 }

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../run.js"],"names":["readFileSync","toString","trim"],"mappings":";;;;;;AAAA;;;;AACA;;;;;;kBACe,kBAAQ,aAAGA,YAAH,CAAgB,WAAhB,EAA6BC,QAA7B,GAAwCC,IAAxC,EAAR,C","file":"run.js","sourcesContent":["import Bot from './Bot';\r\nimport fs from 'fs';\r\nexport default new Bot(fs.readFileSync('token.txt').toString().trim());\r\n"]}

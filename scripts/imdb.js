@@ -8,7 +8,7 @@ exports.imdb = function (bot) {
       private: false,
       rtn: (from, message) => {
 
-          let res = request('GET','http://www.omdbapi.com/?s='+message);
+          let res = request('GET','http://www.omdbapi.com/?s='+message+'&apikey=55025472');
           try {
               let data = JSON.parse(res.getBody());
               if(data.Search)
