@@ -4,7 +4,7 @@ let ow = oversmash();
 export default function (bot) {
     return {
         name: 'overwatch',
-        commands: ['ow', 'overwatch'],
+        commands: ['owstats', 'overwatch'],
         isCommand: true,
         private: false,
         async: true,

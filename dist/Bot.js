@@ -85,11 +85,11 @@ var Bot = function () {
                             var channel = msg.author.dmChannel;
                             if (channel) {
                                 if (this.commands[i].async) {
-                                    this.commands[i].rtn(from, message).then(function (val) {
+                                    this.commands[i].rtn(from, message, msg).then(function (val) {
                                         msg.author.dmChannel.sendMessage(val);
                                     });
                                 } else {
-                                    msg.author.dmChannel.sendMessage(this.commands[i].rtn(from, message));
+                                    msg.author.dmChannel.sendMessage(this.commands[i].rtn(from, message, msg));
                                 }
                             } else {
                                 msg.channel.sendMessage('Sorry, I had trouble DMing you...');
@@ -97,11 +97,11 @@ var Bot = function () {
                             return true;
                         } else {
                             if (this.commands[i].async) {
-                                this.commands[i].rtn(from, message).then(function (val) {
+                                this.commands[i].rtn(from, message, msg).then(function (val) {
                                     msg.channel.sendMessage(val);
                                 });
                             } else {
-                                msg.channel.sendMessage(this.commands[i].rtn(from, message));
+                                msg.channel.sendMessage(this.commands[i].rtn(from, message, msg));
                             }
                             return true;
                         }
@@ -140,6 +140,17 @@ var Bot = function () {
                     return true;
                 }
             }
+        }
+    }, {
+        key: 'getSubCommand',
+        value: function getSubCommand(message, layer) {
+            layer = layer - 1 || 0;
+            message = message.toLowerCase();
+            var subcommand = message.split(' ');
+            if (subcommand.length > layer) {
+                return subcommand[layer];
+            }
+            return false;
         }
     }, {
         key: 'removeCommands',

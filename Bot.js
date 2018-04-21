@@ -48,11 +48,11 @@ class Bot {
                         let channel = msg.author.dmChannel;
                         if (channel) {
                             if (this.commands[i].async) {
-                                this.commands[i].rtn(from, message).then(function(val) {
+                                this.commands[i].rtn(from, message, msg).then(function(val) {
                                     msg.author.dmChannel.sendMessage(val);
                                 })
                             } else {
-                                msg.author.dmChannel.sendMessage(this.commands[i].rtn(from, message));
+                                msg.author.dmChannel.sendMessage(this.commands[i].rtn(from, message, msg));
                             }
                         } else {
                             msg.channel.sendMessage('Sorry, I had trouble DMing you...');
@@ -60,11 +60,11 @@ class Bot {
                         return true;
                     } else {
                         if (this.commands[i].async) {
-                            this.commands[i].rtn(from, message).then(function(val) {
+                            this.commands[i].rtn(from, message, msg).then(function(val) {
                                 msg.channel.sendMessage(val);
                             })
                         } else {
-                            msg.channel.sendMessage(this.commands[i].rtn(from, message));
+                            msg.channel.sendMessage(this.commands[i].rtn(from, message, msg));
                         }
                         return true;
                     }
@@ -99,6 +99,16 @@ class Bot {
                 return true;
             }
         }
+    }
+
+    getSubCommand(message, layer) {
+        layer = layer - 1 || 0;
+        message = message.toLowerCase();
+        let subcommand = message.split(' ');
+        if (subcommand.length > layer) {
+            return subcommand[layer];
+        }
+        return false;
     }
     removeCommands(commands, message, prefix) {
         prefix = prefix || '';
