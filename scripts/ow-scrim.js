@@ -142,6 +142,20 @@ exports.owscrim =  function(bot) {
                     return 'Could not find voice channel';
                 }
             }
+            if (command === 'help') {
+                var retn = '';
+                retn += '* __Overwatch Srim commands__ * \n';
+                retn += '```\n';
+                retn += '!owscrim voice [team number / \'lobby\'] [voice channel name (plz no spaces if possible)] // Sets a voice channel for a team or the lobby\n';
+                retn += '!owscrim match create [match name] // Creates a match with the given name\n';
+                retn += '!owscrim team [team number] [team name] [list of @mention team members]\n';
+                retn += '!owscrim round [type] [(optional)start] // Creates a round with the given type. Optional parameter to move players to respective channels\n';
+                retn += '!owscrim score [team1score]-[team2score] // 3-2 would mean team 1 won that round\n';
+                retn += '!owscrim match start // Moves players to respective channels for their assigned teams\n';
+                retn += '!owscrim match pause // Moves all players back to lobby\n';
+                retn += '```';
+                return retn;
+            }
         },
         isCommand: true,
         private: false
